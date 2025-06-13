@@ -14,7 +14,6 @@ import {
   Button,
   Group,
   MantineProvider,
-  Menu,
   Skeleton,
   Text,
   createTheme,
@@ -22,53 +21,29 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  IconBell,
-  IconBellFilled,
   IconBook,
-  IconChevronDown,
-  IconChevronRight,
-  IconCloudDataConnection,
-  IconDatabase,
   IconDeviceDesktopAnalytics,
-  IconFlag,
-  IconHeartRateMonitor,
-  IconInfoCircle,
   IconSearch,
-  IconServer,
-  IconServerCog,
 } from "@tabler/icons-react";
 import {
   BrowserRouter,
-  Link,
-  NavLink,
   Navigate,
   Route,
   Routes,
 } from "react-router-dom";
-import { IconTable } from "@tabler/icons-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import QueryPage from "./pages/query/QueryPage";
 import AlertsPage from "./pages/AlertsPage";
-import RulesPage from "./pages/RulesPage";
-import TargetsPage from "./pages/targets/TargetsPage";
-import StatusPage from "./pages/StatusPage";
-import TSDBStatusPage from "./pages/TSDBStatusPage";
-import FlagsPage from "./pages/FlagsPage";
-import ConfigPage from "./pages/ConfigPage";
 import AgentPage from "./pages/AgentPage";
 import { Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeSelector } from "./components/ThemeSelector";
 import { Notifications } from "@mantine/notifications";
 import { useSettings } from "./state/settingsSlice";
-import SettingsMenu from "./components/SettingsMenu";
 import ReadinessWrapper from "./components/ReadinessWrapper";
 import NotificationsProvider from "./components/NotificationsProvider";
-import NotificationsIcon from "./components/NotificationsIcon";
 import { QueryParamProvider } from "use-query-params";
 import { ReactRouter6Adapter } from "use-query-params/adapters/react-router-6";
-import ServiceDiscoveryPage from "./pages/service-discovery/ServiceDiscoveryPage";
-import AlertmanagerDiscoveryPage from "./pages/AlertmanagerDiscoveryPage";
 import { actionIconStyle, navIconStyle } from "./styles";
 
 const queryClient = new QueryClient();
@@ -81,78 +56,7 @@ const mainNavPages = [
     element: <QueryPage />,
     inAgentMode: false,
   },
-  {
-    title: "Alerts",
-    path: "/alerts",
-    icon: <IconBellFilled style={navIconStyle} />,
-    element: <AlertsPage />,
-    inAgentMode: false,
-  },
 ];
-
-const monitoringStatusPages = [
-  {
-    title: "Target health",
-    path: "/targets",
-    icon: <IconHeartRateMonitor style={navIconStyle} />,
-    element: <TargetsPage />,
-    inAgentMode: true,
-  },
-  {
-    title: "Rule health",
-    path: "/rules",
-    icon: <IconTable style={navIconStyle} />,
-    element: <RulesPage />,
-    inAgentMode: false,
-  },
-  {
-    title: "Service discovery",
-    path: "/service-discovery",
-    icon: <IconCloudDataConnection style={navIconStyle} />,
-    element: <ServiceDiscoveryPage />,
-    inAgentMode: true,
-  },
-];
-
-const serverStatusPages = [
-  {
-    title: "Runtime & build information",
-    path: "/status",
-    icon: <IconInfoCircle style={navIconStyle} />,
-    element: <StatusPage />,
-    inAgentMode: true,
-  },
-  {
-    title: "TSDB status",
-    path: "/tsdb-status",
-    icon: <IconDatabase style={navIconStyle} />,
-    element: <TSDBStatusPage />,
-    inAgentMode: false,
-  },
-  {
-    title: "Command-line flags",
-    path: "/flags",
-    icon: <IconFlag style={navIconStyle} />,
-    element: <FlagsPage />,
-    inAgentMode: true,
-  },
-  {
-    title: "Configuration",
-    path: "/config",
-    icon: <IconServerCog style={navIconStyle} />,
-    element: <ConfigPage />,
-    inAgentMode: true,
-  },
-  {
-    title: "Alertmanager discovery",
-    path: "/alertmanager-discovery",
-    icon: <IconBell style={navIconStyle} />,
-    element: <AlertmanagerDiscoveryPage />,
-    inAgentMode: false,
-  },
-];
-
-const allStatusPages = [...monitoringStatusPages, ...serverStatusPages];
 
 const theme = createTheme({
   colors: {
@@ -197,8 +101,8 @@ function App() {
         .map((p) => (
           <Button
             key={p.path}
-            component={NavLink}
-            to={p.path}
+            component="a"
+            href={p.path}
             className={classes.link}
             leftSection={p.icon}
             px={navLinkXPadding}
@@ -206,88 +110,12 @@ function App() {
             {p.title}
           </Button>
         ))}
-
-      <Menu shadow="md" width={240}>
-        <Routes>
-          {allStatusPages
-            .filter((p) => !agentMode || p.inAgentMode)
-            .map((p) => (
-              <Route
-                key={p.path}
-                path={p.path}
-                element={
-                  <Menu.Target>
-                    <Button
-                      component={NavLink}
-                      to={p.path}
-                      className={classes.link}
-                      leftSection={p.icon}
-                      rightSection={<IconChevronDown style={navIconStyle} />}
-                      px={navLinkXPadding}
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      Status <IconChevronRight style={navIconStyle} /> {p.title}
-                    </Button>
-                  </Menu.Target>
-                }
-              />
-            ))}
-          <Route
-            path="*"
-            element={
-              <Menu.Target>
-                <Button
-                  className={classes.link}
-                  leftSection={<IconServer style={navIconStyle} />}
-                  rightSection={<IconChevronDown style={navIconStyle} />}
-                  px={navLinkXPadding}
-                >
-                  Status
-                </Button>
-              </Menu.Target>
-            }
-          />
-        </Routes>
-
-        <Menu.Dropdown>
-          <Menu.Label>Monitoring status</Menu.Label>
-          {monitoringStatusPages
-            .filter((p) => !agentMode || p.inAgentMode)
-            .map((p) => (
-              <Menu.Item
-                key={p.path}
-                component={NavLink}
-                to={p.path}
-                leftSection={p.icon}
-              >
-                {p.title}
-              </Menu.Item>
-            ))}
-
-          <Menu.Divider />
-          <Menu.Label>Server status</Menu.Label>
-          {serverStatusPages
-            .filter((p) => !agentMode || p.inAgentMode)
-            .map((p) => (
-              <Menu.Item
-                key={p.path}
-                component={NavLink}
-                to={p.path}
-                leftSection={p.icon}
-              >
-                {p.title}
-              </Menu.Item>
-            ))}
-        </Menu.Dropdown>
-      </Menu>
     </>
   );
 
   const navActionIcons = (
     <>
       <ThemeSelector />
-      <NotificationsIcon />
-      <SettingsMenu />
       <ActionIcon
         component="a"
         href="https://prometheus.io/docs/prometheus/latest/getting_started/"
@@ -329,8 +157,8 @@ function App() {
                       wrap="nowrap"
                     >
                       <Group gap={40} wrap="nowrap">
-                        <Link
-                          to="/"
+                        <a
+                          href="/"
                           style={{ textDecoration: "none", color: "white" }}
                         >
                           <Group gap={10} wrap="nowrap">
@@ -343,7 +171,7 @@ function App() {
                             </Text>
                             <Text fz={20}>{agentMode && "Agent"}</Text>
                           </Group>
-                        </Link>
+                        </a>
                         <Group gap={12} visibleFrom="sm" wrap="nowrap">
                           {navLinks}
                         </Group>
@@ -426,15 +254,6 @@ function App() {
                           />
                         </>
                       )}
-                      {allStatusPages.map((p) => (
-                        <Route
-                          key={p.path}
-                          path={p.path}
-                          element={
-                            <ReadinessWrapper>{p.element}</ReadinessWrapper>
-                          }
-                        />
-                      ))}
                     </Routes>
                   </Suspense>
                 </ErrorBoundary>
